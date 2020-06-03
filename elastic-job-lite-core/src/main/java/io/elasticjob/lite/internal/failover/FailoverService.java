@@ -62,6 +62,15 @@ public final class FailoverService {
         }
     }
     
+    /**
+     * 直接设置失效的分片项标记.
+     *
+     * @param item 崩溃的作业项
+     */
+    public void setCrashedFailoverFlagDirectly(final int item) {
+        jobNodeStorage.createJobNodeIfNeeded(FailoverNode.getItemsNode(item));
+    }
+    
     private boolean isFailoverAssigned(final Integer item) {
         return jobNodeStorage.isJobNodeExisted(FailoverNode.getExecutionFailoverNode(item));
     }
@@ -88,6 +97,7 @@ public final class FailoverService {
     public void updateFailoverComplete(final Collection<Integer> items) {
         for (int each : items) {
             jobNodeStorage.removeJobNodeIfExisted(FailoverNode.getExecutionFailoverNode(each));
+            jobNodeStorage.removeJobNodeIfExisted(FailoverNode.getExecutingFailoverNode(each));
         }
     }
     
@@ -103,6 +113,26 @@ public final class FailoverService {
         for (String each : items) {
             int item = Integer.parseInt(each);
             String node = FailoverNode.getExecutionFailoverNode(item);
+            if (jobNodeStorage.isJobNodeExisted(node) && jobInstanceId.equals(jobNodeStorage.getJobNodeDataDirectly(node))) {
+                result.add(item);
+            }
+        }
+        Collections.sort(result);
+        return result;
+    }
+    
+    /**
+     * 获取作业服务器将要处理的失效转移分片项集合.
+     *
+     * @param jobInstanceId 作业运行实例主键
+     * @return 作业失效转移的分片项集合
+     */
+    public List<Integer> getFailoveringItems(final String jobInstanceId) {
+        List<String> items = jobNodeStorage.getJobNodeChildrenKeys(ShardingNode.ROOT);
+        List<Integer> result = new ArrayList<>(items.size());
+        for (String each : items) {
+            int item = Integer.parseInt(each);
+            String node = FailoverNode.getExecutingFailoverNode(item);
             if (jobNodeStorage.isJobNodeExisted(node) && jobInstanceId.equals(jobNodeStorage.getJobNodeDataDirectly(node))) {
                 result.add(item);
             }
@@ -158,6 +188,7 @@ public final class FailoverService {
             int crashedItem = Integer.parseInt(jobNodeStorage.getJobNodeChildrenKeys(FailoverNode.ITEMS_ROOT).get(0));
             log.debug("Failover job '{}' begin, crashed item '{}'", jobName, crashedItem);
             jobNodeStorage.fillEphemeralJobNode(FailoverNode.getExecutionFailoverNode(crashedItem), JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
+            jobNodeStorage.fillJobNode(FailoverNode.getExecutingFailoverNode(crashedItem), JobRegistry.getInstance().getJobInstance(jobName).getJobInstanceId());
             jobNodeStorage.removeJobNodeIfExisted(FailoverNode.getItemsNode(crashedItem));
             // TODO 不应使用triggerJob, 而是使用executor统一调度
             JobScheduleController jobScheduleController = JobRegistry.getInstance().getJobScheduleController(jobName);
