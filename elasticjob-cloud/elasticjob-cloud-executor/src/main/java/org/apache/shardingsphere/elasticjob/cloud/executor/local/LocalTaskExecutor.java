@@ -22,16 +22,14 @@ import lombok.RequiredArgsConstructor;
 import org.apache.shardingsphere.elasticjob.api.ElasticJob;
 import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
 import org.apache.shardingsphere.elasticjob.api.listener.ShardingContexts;
-import org.apache.shardingsphere.elasticjob.cloud.executor.CloudJobFacade;
-import org.apache.shardingsphere.elasticjob.cloud.executor.JobTypeConfigurationUtil;
-import org.apache.shardingsphere.elasticjob.cloud.util.config.ShardingItemParameters;
+import org.apache.shardingsphere.elasticjob.cloud.facade.CloudJobFacade;
 import org.apache.shardingsphere.elasticjob.executor.ElasticJobExecutor;
 import org.apache.shardingsphere.elasticjob.executor.JobFacade;
+import org.apache.shardingsphere.elasticjob.infra.context.ShardingItemParameters;
 import org.apache.shardingsphere.elasticjob.tracing.JobEventBus;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 
 /**
  * Local task executor.
@@ -59,31 +57,17 @@ public final class LocalTaskExecutor {
      * Execute job.
      */
     public void execute() {
-        createElasticJobExecutor(new CloudJobFacade(getShardingContexts(), getJobConfiguration(), new JobEventBus())).execute();
+        createElasticJobExecutor(new CloudJobFacade(getShardingContexts(), jobConfiguration, new JobEventBus())).execute();
     }
     
     private ElasticJobExecutor createElasticJobExecutor(final JobFacade jobFacade) {
-        return null == elasticJob
-                ? new ElasticJobExecutor(elasticJobType, jobConfiguration, jobFacade)
-                : new ElasticJobExecutor(elasticJob, jobConfiguration, jobFacade);
+        return null == elasticJob ? new ElasticJobExecutor(elasticJobType, jobConfiguration, jobFacade) : new ElasticJobExecutor(elasticJob, jobConfiguration, jobFacade);
     }
     
     private ShardingContexts getShardingContexts() {
         Map<Integer, String> shardingItemMap = new HashMap<>(1, 1);
         shardingItemMap.put(shardingItem, new ShardingItemParameters(jobConfiguration.getShardingItemParameters()).getMap().get(shardingItem));
-        String taskId = new StringJoiner("@-@").add(jobConfiguration.getJobName()).add(shardingItem + "").add("READY").add("foo_slave_id").add("foo_uuid").toString();
+        String taskId = String.join("@-@", jobConfiguration.getJobName(), shardingItem + "", "READY", "foo_slave_id", "foo_uuid");
         return new ShardingContexts(taskId, jobConfiguration.getJobName(), jobConfiguration.getShardingTotalCount(), jobConfiguration.getJobParameter(), shardingItemMap);
-    }
-    
-    private JobConfiguration getJobConfiguration() {
-        Map<String, String> jobConfigurationMap = new HashMap<>();
-        jobConfigurationMap.put("jobName", jobConfiguration.getJobName());
-        if (jobConfiguration.getProps().containsKey("streaming.process")) {
-            jobConfigurationMap.put("streamingProcess", jobConfiguration.getProps().getProperty("streaming.process"));
-        }
-        if (jobConfiguration.getProps().containsKey("script.command.line")) {
-            jobConfigurationMap.put("scriptCommandLine", jobConfiguration.getProps().getProperty("script.command.line"));
-        }
-        return JobTypeConfigurationUtil.createJobConfigurationContext(jobConfigurationMap);
     }
 }

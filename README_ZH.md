@@ -1,32 +1,47 @@
 # [ElasticJob - 分布式作业调度解决方案](http://shardingsphere.apache.org/elasticjob/)
 
-**官方网站: http://shardingsphere.apache.org/elasticjob/**
+**官方网站: https://shardingsphere.apache.org/elasticjob/**
 
-[![Stargazers over time](https://starchart.cc/apache/shardingsphere-elasticjob-lite.svg)](https://starchart.cc/apache/shardingsphere-elasticjob-lite)
+[![Stargazers over time](https://starchart.cc/apache/shardingsphere-elasticjob.svg)](https://starchart.cc/apache/shardingsphere-elasticjob)
 
-ElasticJob 是一个分布式调度解决方案，由 2 个相互独立的子项目 ElasticJob Lite 和 ElasticJob Cloud 组成。
-
-ElasticJob Lite 定位为轻量级无中心化解决方案，使用 jar 的形式提供分布式任务的协调服务；
-ElasticJob Cloud 使用 Mesos + Docker（TODO）的解决方案，额外提供资源治理、应用分发以及进程隔离等服务。
-
-ElasticJob 的各个产品使用统一的作业 API，开发者仅需要一次开发，即可随意部署。
+ElasticJob 是一个分布式调度解决方案，由两个相互独立的子项目 ElasticJob Lite 和 ElasticJob Cloud 组成。
+它通过弹性调度、资源管控、以及作业治理的功能，打造一个适用于互联网场景的分布式调度解决方案，并通过开放的架构设计，提供多元化的作业生态。
+它的各个产品使用统一的作业 API，开发者仅需一次开发，即可随意部署。
 
 ElasticJob 已于 2020 年 5 月 28 日成为 [Apache ShardingSphere](https://shardingsphere.apache.org/) 的子项目。
 欢迎通过[邮件列表](mailto:dev@shardingsphere.apache.org)参与讨论。
 
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
-[![GitHub release](https://img.shields.io/github/release/apache/shardingsphere-elasticjob-lite.svg)](https://github.com/apache/shardingsphere-elasticjob-lite/releases)
+[![GitHub release](https://img.shields.io/github/release/apache/shardingsphere-elasticjob.svg)](https://github.com/apache/shardingsphere-elasticjob/releases)
 
 [![Maven Status](https://maven-badges.herokuapp.com/maven-central/com.dangdang/elastic-job/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dangdang/elastic-job)
-[![Build Status](https://secure.travis-ci.org/apache/shardingsphere-elasticjob-lite.png?branch=master)](https://travis-ci.org/apache/shardingsphere-elasticjob-lite)
-[![Coverage Status](https://coveralls.io/repos/elasticjob/elastic-job/badge.svg?branch=master&service=github)](https://coveralls.io/github/elasticjob/elastic-job?branch=master)
+[![Build Status](https://secure.travis-ci.org/apache/shardingsphere-elasticjob.png?branch=master)](https://travis-ci.org/apache/shardingsphere-elasticjob)
+[![Coverage Status](https://coveralls.io/repos/github/apache/shardingsphere-elasticjob/badge.svg?branch=master)](https://coveralls.io/github/apache/shardingsphere-elasticjob?branch=master)
 
-## 架构图
+## 简介
 
-### ElasticJob Lite
+使用 ElasticJob 能够让开发工程师不再担心任务的线性吞吐量提升等非功能需求，使他们能够更加专注于面向业务编码设计；
+同时，它也能够解放运维工程师，使他们不必再担心任务的可用性和相关管理需求，只通过轻松的增加服务节点即可达到自动化运维的目的。
 
-![ElasticJob Lite Architecture](https://shardingsphere.apache.org/elasticjob/lite/img/architecture/elastic_job_lite.png)
+### ElasticJob-Lite
+
+定位为轻量级无中心化解决方案，使用 jar 的形式提供分布式任务的协调服务。
+
+![ElasticJob-Lite Architecture](https://shardingsphere.apache.org/elasticjob/current/img/architecture/elasticjob_lite.png)
+
+### ElasticJob-Cloud
+
+采用自研 Mesos Framework 的解决方案，额外提供资源治理、应用分发以及进程隔离等功能。
+
+![ElasticJob-Cloud Architecture](https://shardingsphere.apache.org/elasticjob/current/img/architecture/elasticjob_cloud.png)
+
+|           | *ElasticJob-Lite* | *ElasticJob-Cloud* |
+| --------- | ----------------- | ------------------ |
+| 无中心化   | 是                | 否                  |
+| 资源分配   | 不支持             | 支持                |
+| 作业模式   | 常驻               | 常驻 + 瞬时         |
+| 部署依赖   | ZooKeeper         | ZooKeeper + Mesos   |
 
 ## 功能列表
 
@@ -59,73 +74,16 @@ ElasticJob 已于 2020 年 5 月 28 日成为 [Apache ShardingSphere](https://sh
   - 作业执行历史数据追踪
   - 注册中心管理
 
-## [Roadmap](ROADMAP.md)
+## 环境要求
 
-## 快速入门
+### Java
 
-### 引入maven依赖
+请使用 Java 8 及其以上版本。
 
-```xml
-<!-- 引入elasticjob-lite核心模块 -->
-<dependency>
-    <groupId>org.apache.shardingsphere.elasticjob</groupId>
-    <artifactId>elasticjob-lite-core</artifactId>
-    <version>${latest.release.version}</version>
-</dependency>
+### ZooKeeper
 
-<!-- 使用springframework自定义命名空间时引入 -->
-<dependency>
-    <groupId>org.apache.shardingsphere.elasticjob</groupId>
-    <artifactId>elasticjob-lite-spring</artifactId>
-    <version>${latest.release.version}</version>
-</dependency>
-```
+请使用 ZooKeeper 3.6.0 及其以上版本。[详情参见](https://zookeeper.apache.org/)
 
-### 作业开发
+### Mesos（仅 ElasticJob-Cloud 使用）
 
-```java
-public class MyElasticJob implements SimpleJob {
-    
-    @Override
-    public void execute(ShardingContext context) {
-        switch (context.getShardingItem()) {
-            case 0: 
-                // do something by sharding item 0
-                break;
-            case 1: 
-                // do something by sharding item 1
-                break;
-            case 2: 
-                // do something by sharding item 2
-                break;
-            // case n: ...
-        }
-    }
-}
-```
-
-### 作业配置
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:elasticjob="http://shardingsphere.apache.org/schema/elasticjob"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-                           http://www.springframework.org/schema/beans/spring-beans.xsd
-                           http://shardingsphere.apache.org/schema/elasticjob
-                           http://shardingsphere.apache.org/schema/elasticjob/elasticjob.xsd
-                           ">
-    <!--配置作业注册中心 -->
-    <elasticjob:zookeeper id="regCenter" server-lists="yourhost:2181" namespace="elastic-job" base-sleep-time-milliseconds="1000" max-sleep-time-milliseconds="3000" max-retries="3" />
-   
-    <!--配置任务快照服务 -->
-    <elasticjob:snapshot id="jobSnapshot" registry-center-ref="regCenter" dump-port="9999"/>
-
-    <!--配置作业类 -->
-    <bean id="simpleJob" class="xxx.MyElasticJob" />
-    
-    <!--配置作业 -->
-    <elasticjob:simple id="oneOffElasticJob" job-ref="simpleJob" registry-center-ref="regCenter" cron="0/10 * * * * ?" sharding-total-count="3" sharding-item-parameters="0=A,1=B,2=C" />
-</beans>
-```
+请使用 Mesos 1.1.0 及其兼容版本。[详情参见](https://mesos.apache.org/)

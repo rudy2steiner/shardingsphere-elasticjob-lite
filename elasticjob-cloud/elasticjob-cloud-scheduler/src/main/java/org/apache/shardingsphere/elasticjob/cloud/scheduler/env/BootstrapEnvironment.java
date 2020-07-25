@@ -25,10 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperConfiguration;
 import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
-
 import javax.sql.DataSource;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Properties;
@@ -40,7 +39,7 @@ import java.util.Properties;
 public final class BootstrapEnvironment {
     
     @Getter
-    private static BootstrapEnvironment instance = new BootstrapEnvironment();
+    private static final BootstrapEnvironment INSTANCE = new BootstrapEnvironment();
     
     private static final String PROPERTIES_PATH = "conf/elasticjob-cloud-scheduler.properties";
     
@@ -52,7 +51,7 @@ public final class BootstrapEnvironment {
     
     private Properties getProperties() {
         Properties result = new Properties();
-        try (FileInputStream fileInputStream = new FileInputStream(PROPERTIES_PATH)) {
+        try (InputStream fileInputStream = BootstrapEnvironment.class.getClassLoader().getResourceAsStream(PROPERTIES_PATH)) {
             result.load(fileInputStream);
         } catch (final IOException ex) {
             log.warn("Can not load properties file from path: '{}'.", PROPERTIES_PATH);
@@ -92,7 +91,7 @@ public final class BootstrapEnvironment {
     
     /**
      * Get zookeeper config.
-     * 
+     *
      * @return zookeeper config
      */
     // TODO Other zkConfig values ​​are configurable

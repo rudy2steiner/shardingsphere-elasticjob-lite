@@ -18,28 +18,25 @@
 package org.apache.shardingsphere.elasticjob.lite.internal.listener;
 
 import com.google.common.base.Charsets;
-import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent.Type;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
+import org.apache.curator.framework.recipes.cache.CuratorCacheListener;
 
 /**
  * Job Listener.
  */
-public abstract class AbstractJobListener implements TreeCacheListener {
+public abstract class AbstractJobListener implements CuratorCacheListener {
     
     @Override
-    public final void childEvent(final CuratorFramework client, final TreeCacheEvent event) {
-        ChildData childData = event.getData();
-        if (null == childData) {
+    public final void event(final Type type, final ChildData oldData, final ChildData newData) {
+        if (null == newData && null == oldData) {
             return;
         }
-        String path = childData.getPath();
+        String path = Type.NODE_DELETED == type ? oldData.getPath() : newData.getPath();
+        byte[] data = Type.NODE_DELETED == type ? oldData.getData() : newData.getData();
         if (path.isEmpty()) {
             return;
         }
-        dataChanged(path, event.getType(), null == childData.getData() ? "" : new String(childData.getData(), Charsets.UTF_8));
+        dataChanged(path, type, null == data ? "" : new String(data, Charsets.UTF_8));
     }
     
     protected abstract void dataChanged(String path, Type eventType, String data);

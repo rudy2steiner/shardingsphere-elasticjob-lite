@@ -22,7 +22,7 @@ import com.google.common.base.Strings;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shardingsphere.elasticjob.cloud.config.CloudJobConfiguration;
+import org.apache.shardingsphere.elasticjob.cloud.config.pojo.CloudJobConfigurationPOJO;
 import org.apache.shardingsphere.elasticjob.cloud.scheduler.config.job.CloudJobConfigurationService;
 import org.apache.shardingsphere.elasticjob.cloud.scheduler.context.JobContext;
 import org.apache.shardingsphere.elasticjob.cloud.scheduler.env.BootstrapEnvironment;
@@ -48,7 +48,7 @@ import java.util.Set;
 @Slf4j
 public final class FailoverService {
     
-    private final BootstrapEnvironment env = BootstrapEnvironment.getInstance();
+    private final BootstrapEnvironment env = BootstrapEnvironment.getINSTANCE();
     
     private final CoordinatorRegistryCenter regCenter;
     
@@ -97,14 +97,14 @@ public final class FailoverService {
                 regCenter.remove(FailoverNode.getFailoverJobNodePath(each));
                 continue;
             }
-            Optional<CloudJobConfiguration> cloudJobConfig = configService.load(each);
+            Optional<CloudJobConfigurationPOJO> cloudJobConfig = configService.load(each);
             if (!cloudJobConfig.isPresent()) {
                 regCenter.remove(FailoverNode.getFailoverJobNodePath(each));
                 continue;
             }
             List<Integer> assignedShardingItems = getAssignedShardingItems(each, taskIdList, assignedTasks);
             if (!assignedShardingItems.isEmpty()) {
-                result.add(new JobContext(cloudJobConfig.get(), assignedShardingItems, ExecutionType.FAILOVER));    
+                result.add(new JobContext(cloudJobConfig.get().toCloudJobConfiguration(), assignedShardingItems, ExecutionType.FAILOVER));
             }
         }
         return result;
@@ -114,7 +114,7 @@ public final class FailoverService {
         List<Integer> result = new ArrayList<>(taskIdList.size());
         for (String each : taskIdList) {
             MetaInfo metaInfo = MetaInfo.from(each);
-            if (assignedTasks.add(Hashing.md5().newHasher().putString(jobName, Charsets.UTF_8).putInt(metaInfo.getShardingItems().get(0)).hash()) && !runningService.isTaskRunning(metaInfo)) {
+            if (assignedTasks.add(Hashing.sha256().newHasher().putString(jobName, Charsets.UTF_8).putInt(metaInfo.getShardingItems().get(0)).hash()) && !runningService.isTaskRunning(metaInfo)) {
                 result.add(metaInfo.getShardingItems().get(0));
             }
         }

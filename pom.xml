@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -26,7 +27,7 @@
     </parent>
     <groupId>org.apache.shardingsphere.elasticjob</groupId>
     <artifactId>elasticjob</artifactId>
-    <version>3.0.0.M1-SNAPSHOT</version>
+    <version>3.0.0-alpha-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     
@@ -36,6 +37,7 @@
         <module>elasticjob-executor</module>
         <module>elasticjob-lite</module>
         <module>elasticjob-cloud</module>
+        <module>elasticjob-distribution</module>
     </modules>
     
     <properties>
@@ -47,10 +49,10 @@
         <springframework.version>[3.1.0.RELEASE,)</springframework.version>
         <springboot.version>2.3.1.RELEASE</springboot.version>
         
-        <guava.version>18.0</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <commons-lang3.version>3.4</commons-lang3.version>
         <quartz.version>2.3.2</quartz.version>
-        <curator.version>2.10.0</curator.version>
+        <curator.version>5.1.0</curator.version>
         <lombok.version>1.18.12</lombok.version>
         <aspectj.version>1.9.1</aspectj.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -61,9 +63,7 @@
         <gson.version>2.6.1</gson.version>
         <mesos.version>1.1.0</mesos.version>
         <fenzo.version>0.11.1</fenzo.version>
-        <jersey.version>1.19</jersey.version>
-        <jetty-all-server.version>8.1.19.v20160209</jetty-all-server.version>
-        
+
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <mysql-connector-java.version>8.0.16</mysql-connector-java.version>
         <h2.version>1.4.184</h2.version>
@@ -84,8 +84,9 @@
         <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>2.4</maven-source-plugin.version>
         <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
+        <coveralls-maven-plugin.version>4.3.0</coveralls-maven-plugin.version>
         <cobertura-maven-plugin.version>2.7</cobertura-maven-plugin.version>
-        <coveralls-maven-plugin.version>4.1.0</coveralls-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <findbugs-maven-plugin.version>3.0.2</findbugs-maven-plugin.version>
         <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
         <maven-pmd-plugin.version>3.5</maven-pmd-plugin.version>
@@ -208,26 +209,6 @@
             </dependency>
             
             <dependency>
-                <groupId>com.sun.jersey</groupId>
-                <artifactId>jersey-servlet</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.jersey</groupId>
-                <artifactId>jersey-json</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.sun.jersey</groupId>
-                <artifactId>jersey-client</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty.aggregate</groupId>
-                <artifactId>jetty-all-server</artifactId>
-                <version>${jetty-all-server.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>commons-dbcp</groupId>
                 <artifactId>commons-dbcp</artifactId>
                 <version>${commons-dbcp.version}</version>
@@ -316,6 +297,7 @@
     </dependencyManagement>
     
     <build>
+        <finalName>apache-shardingsphere-elasticjob-${project.version}</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -495,6 +477,11 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${coveralls-maven-plugin.version}</version>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>${cobertura-maven-plugin.version}</version>
@@ -519,16 +506,29 @@
                         </ignoreMethodAnnotations>
                         <excludes>
                             <exclude>org/apache/**/*Test.class</exclude>
-                            <exclude>org/apache/**/Test*.class</exclude>
-                            <exclude>org/apache/job/lite/console/**/*.class</exclude>
+                            <exclude>org/apache/shardingsphere/elasticjob/cloud/api/JobBootstrap.class</exclude>
                         </excludes>
                     </instrumentation>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.eluder.coveralls</groupId>
-                <artifactId>coveralls-maven-plugin</artifactId>
-                <version>${coveralls-maven-plugin.version}</version>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.rat</groupId>
@@ -679,9 +679,9 @@
     </licenses>
     
     <scm>
-        <connection>scm:git:https://github.com/apache/shardingsphere-elasticjob-lite.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/shardingsphere-elasticjob-lite.git</developerConnection>
-        <url>https://github.com/apache/shardingsphere-elasticjob-lite.git</url>
+        <connection>scm:git:https://github.com/apache/shardingsphere-elasticjob.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/shardingsphere-elasticjob.git</developerConnection>
+        <url>https://github.com/apache/shardingsphere-elasticjob.git</url>
         <tag>HEAD</tag>
     </scm>
     

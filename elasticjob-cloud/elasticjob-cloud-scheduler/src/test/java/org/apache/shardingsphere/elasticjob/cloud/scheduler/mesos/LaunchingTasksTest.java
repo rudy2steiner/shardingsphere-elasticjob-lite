@@ -58,20 +58,18 @@ public final class LaunchingTasksTest {
     @Mock
     private FailoverService failoverService;
     
-    private FacadeService facadeService;
-    
     private LaunchingTasks launchingTasks;
     
     @Before
     public void setUp() {
-        facadeService = new FacadeService(regCenter);
+        FacadeService facadeService = new FacadeService(regCenter);
         ReflectionUtils.setFieldValue(facadeService, "jobConfigService", jobConfigService);
         ReflectionUtils.setFieldValue(facadeService, "readyService", readyService);
         ReflectionUtils.setFieldValue(facadeService, "runningService", runningService);
         ReflectionUtils.setFieldValue(facadeService, "failoverService", failoverService);
         when(facadeService.getEligibleJobContext()).thenReturn(Arrays.asList(
-                JobContext.from(CloudJobConfigurationBuilder.createCloudJobConfiguration("ready_job"), ExecutionType.READY),
-                JobContext.from(CloudJobConfigurationBuilder.createCloudJobConfiguration("failover_job"), ExecutionType.FAILOVER)));
+                JobContext.from(CloudJobConfigurationBuilder.createCloudJobConfiguration("ready_job").toCloudJobConfiguration(), ExecutionType.READY),
+                JobContext.from(CloudJobConfigurationBuilder.createCloudJobConfiguration("failover_job").toCloudJobConfiguration(), ExecutionType.FAILOVER)));
         launchingTasks = new LaunchingTasks(facadeService.getEligibleJobContext());
     }
     
