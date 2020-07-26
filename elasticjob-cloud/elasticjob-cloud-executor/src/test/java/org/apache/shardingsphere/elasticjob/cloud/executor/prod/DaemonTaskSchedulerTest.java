@@ -88,7 +88,7 @@ public final class DaemonTaskSchedulerTest {
         verify(executorDriver).sendStatusUpdate(TaskStatus.newBuilder().setTaskId(taskId).setState(TaskState.TASK_RUNNING).setMessage("COMPLETE").build());
         verify(shardingContexts).setCurrentJobEventSamplingCount(0);
     }
-    
+
     @Test
     public void assertJobRunWithEventSampling() {
         when(shardingContexts.getJobEventSamplingCount()).thenReturn(2);
@@ -117,8 +117,9 @@ public final class DaemonTaskSchedulerTest {
         Field field = DaemonTaskScheduler.class.getDeclaredField("RUNNING_SCHEDULERS");
         field.setAccessible(true);
         assertTrue(((ConcurrentHashMap) field.get(scheduler)).containsKey(taskId.getValue()));
+        DaemonTaskScheduler.shutdown(taskId);
     }
-    
+
     @Test
     @SneakyThrows
     public void assertShutdown() {
