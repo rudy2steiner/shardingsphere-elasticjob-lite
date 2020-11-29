@@ -51,9 +51,8 @@ public final class CloudJobConfigurationListener implements CuratorCacheListener
     }
     
     @Override
-
     public void event(final Type type, final ChildData oldData, final ChildData data) {
-        String path = data.getPath();
+        String path = Type.NODE_DELETED == type ? oldData.getPath() : data.getPath();
         if (Type.NODE_CREATED == type && isJobConfigNode(path)) {
             CloudJobConfigurationPOJO cloudJobConfig = getCloudJobConfiguration(data);
             if (null != cloudJobConfig) {
@@ -86,7 +85,7 @@ public final class CloudJobConfigurationListener implements CuratorCacheListener
             return YamlEngine.unmarshal(new String(data.getData()), CloudJobConfigurationPOJO.class);
             // CHECKSTYLE:OFF
         } catch (final Exception ex) {
-            log.warn("Wrong Cloud Job Configuration with:", ex.getMessage());
+            log.warn("Wrong Cloud Job Configuration with:", ex);
             // CHECKSTYLE:ON
             return null;
         }

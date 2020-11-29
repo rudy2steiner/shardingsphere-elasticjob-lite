@@ -25,6 +25,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleScheduleBuilder;
+import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
@@ -40,26 +41,6 @@ public final class JobScheduleController {
     private final JobDetail jobDetail;
     
     private final String triggerIdentity;
-    
-    /**
-     * Execute job.
-     */
-    public void executeJob() {
-        try {
-            if (!scheduler.checkExists(jobDetail.getKey())) {
-                scheduler.scheduleJob(jobDetail, createOneOffTrigger());
-                scheduler.start();
-            } else {
-                scheduler.triggerJob(jobDetail.getKey());
-            }
-        } catch (final SchedulerException ex) {
-            throw new JobSystemException(ex);
-        }
-    }
-    
-    private Trigger createOneOffTrigger() {
-        return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(SimpleScheduleBuilder.simpleSchedule()).build();
-    }
     
     /**
      * Schedule job.
@@ -87,6 +68,20 @@ public final class JobScheduleController {
             CronTrigger trigger = (CronTrigger) scheduler.getTrigger(TriggerKey.triggerKey(triggerIdentity));
             if (!scheduler.isShutdown() && null != trigger && !cron.equals(trigger.getCronExpression())) {
                 scheduler.rescheduleJob(TriggerKey.triggerKey(triggerIdentity), createCronTrigger(cron));
+            }
+        } catch (final SchedulerException ex) {
+            throw new JobSystemException(ex);
+        }
+    }
+    
+    /**
+     * Reschedule OneOff job.
+     */
+    public synchronized void rescheduleJob() {
+        try {
+            SimpleTrigger trigger = (SimpleTrigger) scheduler.getTrigger(TriggerKey.triggerKey(triggerIdentity));
+            if (!scheduler.isShutdown() && null != trigger) {
+                scheduler.rescheduleJob(TriggerKey.triggerKey(triggerIdentity), createOneOffTrigger());
             }
         } catch (final SchedulerException ex) {
             throw new JobSystemException(ex);
@@ -141,12 +136,24 @@ public final class JobScheduleController {
      */
     public synchronized void triggerJob() {
         try {
-            if (!scheduler.isShutdown()) {
+            if (scheduler.isShutdown()) {
+                return;
+            }
+            if (!scheduler.checkExists(jobDetail.getKey())) {
+                scheduler.scheduleJob(jobDetail, createOneOffTrigger());
+            } else {
                 scheduler.triggerJob(jobDetail.getKey());
+            }
+            if (!scheduler.isStarted()) {
+                scheduler.start();
             }
         } catch (final SchedulerException ex) {
             throw new JobSystemException(ex);
         }
+    }
+    
+    private Trigger createOneOffTrigger() {
+        return TriggerBuilder.newTrigger().withIdentity(triggerIdentity).withSchedule(SimpleScheduleBuilder.simpleSchedule()).build();
     }
     
     /**
@@ -155,7 +162,7 @@ public final class JobScheduleController {
     public synchronized void shutdown() {
         shutdown(false);
     }
-
+    
     /**
      * Shutdown scheduler graceful.
      * @param isCleanShutdown if wait jobs complete

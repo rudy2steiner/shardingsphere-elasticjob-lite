@@ -9,7 +9,7 @@ chapter = true
 
 Answer:
 
-`ElasticJob` uses `lombok` to enable minimal coding. For more details about using and installment, please refer to the official website of [lombok](https://projectlombok.org/download.html).
+`ElasticJob` uses `lombok` to enable minimal coding. For more details about using and installment, please refer to the official website of [lombok](https://projectlombok.org/download).
 
 ## 2. Does ElasticJob support dynamically adding jobs?
 
@@ -34,7 +34,7 @@ Answer:
 `ElasticJob-Lite` adopts a decentralized design. If the configuration of each client is inconsistent and is not controlled, the configuration of the client which is last started will be the final configuration of the registry center.
 
 `ElasticJob-Lite` proposes the concept of `overwrite`, which can be configured through `JobConfiguration` or `Spring` namespace.
-`overwrite=true` indicates that the client's configuration is allowed override the registry center, and on the contrary is not allowed.
+`overwrite=true` indicates that the client's configuration is allowed to override the registry center, and on the contrary is not allowed.
 If there is no configuration of related jobs in the registry center, regardless of whether the property of `overwrite` is configured, the client's configuration will be still written into the registry center.
 
 ## 4. What happens if the job can't communicate with the registry center?
@@ -61,7 +61,7 @@ Answer:
 
 Distributed problems are very difficult to debug and reproduce. For this reason, `ElasticJob-Lite` provides the `dump` command.
 
-If you suspect a problem in some scenarios, you can refer to the [dump](/en/user-manual/dump/) document to submit the job runtime information to the community.
+If you suspect a problem in some scenarios, you can refer to the [dump](/en/user-manual/elasticjob-lite/operation/dump/) document to submit the job runtime information to the community.
 `ElasticJob` has filtered sensitive information such as `IP`, and the dump file can be safely transmitted on the Internet.
 
 ## 7. What are the usage restrictions of `ElasticJob-Cloud`?
@@ -87,3 +87,30 @@ Make sure that the `Web Console`'s version is consistent with `ElasticJob`, othe
 Answer:
 
 Shard to be adjusted indicates the state when the job has started but has not yet obtained the shard.
+
+## 11. Why is there a task scheduling delay in the first startup?
+
+Answer:
+
+ElasticJob will obtain the local IP when performing task scheduling, and it may be slow to obtain the IP for the first time. Try to set -Djava.net.preferIPv4Stack=true.
+
+
+## 12. In Windows env, run ShardingSphere-ElasticJob-UI, could not find or load main class org.apache.shardingsphere.elasticjob.lite.ui.Bootstrap. Why?
+
+Answer:
+
+Some decompression tools may truncate the file name when decompressing the ShardingSphere-ElasticJob-UI binary package, resulting in some classes not being found
+
+Open cmd.exe and execute the following command:
+
+tar zxvf apache-shardingsphere-elasticjob-${RELEASE.VERSION}-lite-ui-bin.tar.gz
+
+## 13. Unable to startup Cloud Scheduler. Continuously output "Elastic job: IP:PORT has leadership"gg
+
+Answer: 
+
+Cloud Scheduler required Mesos native library. Specify Mesos native library path by property `-Djava.library.path`.
+
+For instance, Mesos native libraries are under `/usr/local/lib`, so the property `-Djava.library.path=/usr/local/lib` need to be set to start the Cloud Scheduler.
+
+About Apache Mesos, please refer to [Apache Mesos](https://mesos.apache.org/).

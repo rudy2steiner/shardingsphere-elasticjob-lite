@@ -18,11 +18,11 @@
 package org.apache.shardingsphere.elasticjob.lite.api.listener;
 
 import lombok.Setter;
-import org.apache.shardingsphere.elasticjob.api.listener.ElasticJobListener;
-import org.apache.shardingsphere.elasticjob.api.listener.ShardingContexts;
 import org.apache.shardingsphere.elasticjob.infra.concurrent.BlockUtils;
 import org.apache.shardingsphere.elasticjob.infra.env.TimeService;
 import org.apache.shardingsphere.elasticjob.infra.exception.JobSystemException;
+import org.apache.shardingsphere.elasticjob.infra.listener.ElasticJobListener;
+import org.apache.shardingsphere.elasticjob.infra.listener.ShardingContexts;
 import org.apache.shardingsphere.elasticjob.lite.internal.guarantee.GuaranteeService;
 
 import java.util.Set;
@@ -53,6 +53,9 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
     @Override
     public final void beforeJobExecuted(final ShardingContexts shardingContexts) {
         Set<Integer> shardingItems = shardingContexts.getShardingItemParameters().keySet();
+        if (shardingItems.isEmpty()) {
+            return;
+        }
         guaranteeService.registerStart(shardingItems);
         while (!guaranteeService.isRegisterStartSuccess(shardingItems)) {
             BlockUtils.waitingShortTime();
@@ -79,6 +82,9 @@ public abstract class AbstractDistributeOnceElasticJobListener implements Elasti
     @Override
     public final void afterJobExecuted(final ShardingContexts shardingContexts) {
         Set<Integer> shardingItems = shardingContexts.getShardingItemParameters().keySet();
+        if (shardingItems.isEmpty()) {
+            return;
+        }
         guaranteeService.registerComplete(shardingItems);
         while (!guaranteeService.isRegisterCompleteSuccess(shardingItems)) {
             BlockUtils.waitingShortTime();

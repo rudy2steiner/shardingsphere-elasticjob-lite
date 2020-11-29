@@ -24,6 +24,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Properties;
 
 /**
@@ -58,6 +62,10 @@ public final class JobConfiguration {
     private final String jobExecutorServiceHandlerType;
     
     private final String jobErrorHandlerType;
+    
+    private final Collection<String> jobListenerTypes;
+    
+    private final Collection<JobExtraConfiguration> extraConfigurations;
     
     private final String description;
     
@@ -106,6 +114,10 @@ public final class JobConfiguration {
         private String jobExecutorServiceHandlerType;
         
         private String jobErrorHandlerType;
+    
+        private final Collection<String> jobListenerTypes = new ArrayList<>();
+
+        private final Collection<JobExtraConfiguration> extraConfigurations = new LinkedList<>();
         
         private String description = "";
         
@@ -239,13 +251,13 @@ public final class JobConfiguration {
         }
         
         /**
-         * Set job sharding sharding type.
+         * Set job sharding strategy type.
          *
          * <p>
          * Default for {@code AverageAllocationJobShardingStrategy}.
          * </p>
          *
-         * @param jobShardingStrategyType job sharding sharding type
+         * @param jobShardingStrategyType job sharding strategy type
          * @return ElasticJob configuration builder
          */
         public Builder jobShardingStrategyType(final String jobShardingStrategyType) {
@@ -274,6 +286,28 @@ public final class JobConfiguration {
          */
         public Builder jobErrorHandlerType(final String jobErrorHandlerType) {
             this.jobErrorHandlerType = jobErrorHandlerType;
+            return this;
+        }
+        
+        /**
+         * Set job listener types.
+         *
+         * @param jobListenerTypes job listener types
+         * @return ElasticJob configuration builder
+         */
+        public Builder jobListenerTypes(final String... jobListenerTypes) {
+            this.jobListenerTypes.addAll(Arrays.asList(jobListenerTypes));
+            return this;
+        }
+        
+        /**
+         * Add extra configurations.
+         *
+         * @param extraConfig job extra configuration
+         * @return job configuration builder
+         */
+        public Builder addExtraConfigurations(final JobExtraConfiguration extraConfig) {
+            extraConfigurations.add(extraConfig);
             return this;
         }
         
@@ -342,7 +376,7 @@ public final class JobConfiguration {
             Preconditions.checkArgument(shardingTotalCount > 0, "shardingTotalCount should larger than zero.");
             return new JobConfiguration(jobName, cron, shardingTotalCount, shardingItemParameters, jobParameter, 
                     monitorExecution, failover, misfire, maxTimeDiffSeconds, reconcileIntervalMinutes,
-                    jobShardingStrategyType, jobExecutorServiceHandlerType, jobErrorHandlerType, description, props, disabled, overwrite);
+                    jobShardingStrategyType, jobExecutorServiceHandlerType, jobErrorHandlerType, jobListenerTypes, extraConfigurations, description, props, disabled, overwrite);
         }
     }
 }

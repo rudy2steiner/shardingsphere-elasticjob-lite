@@ -1,15 +1,70 @@
-## 3.0.0.M1
+## 3.0.0-beta
+
+### API Changes
+
+1. Refactor job listener configuration
+1. Refactor job error handler configuration
+1. Refactor job tracing configuration
+
+### New Features
+
+1. Support HTTP job
+1. Remove spring boot dependencies from job kernel module
+1. Support email notification when job execute error
+1. Support wechat notification when job execute error
+1. Support dingtalk notification when job execute error
 
 ### Bug Fixes
 
-1. [ISSUE #384](https://github.com/elasticjob/elastic-job/issues/384) Cloud's executor thread ContextClassLoader is empty
+1. Fix bug of one-off job cannot work with sharding
+1. Fix bug of table and index name case-insensitive for event trace using database
+1. Fix bug of dead lock when resharding flag set incorrectly
 
+###  Change Logs
+
+1. [MILESTONE](https://github.com/apache/shardingsphere-elasticjob/milestone/2)
+
+## 3.0.0-alpha
+
+### Build & Dependencies
+
+1. Upgrade the minimum supported version of JDK to Java8
+1. Update Zookeeper to version 3.6.x and curator to version 5.1.0
+1. Update Google Guava to version 29.0-jre
+
+### API Changes
+
+1. Change maven groupId to org.apache.shardingsphere.elasticjob
+1. Change package name to org.apache.shardingsphere.elasticjob
+1. Change spring namespace name to http://shardingsphere.apache.org/schema/elasticjob
+1. New job API, use SPI to customize job type
+1. Use SPI to introduce configuration strategies
+1. Split console and UI from job core modules
+
+### New Features
+
+1. Add One-off job executor
+1. Add Spring Boot Starter for ElasticJob-Lite
+1. Add more databases support for event trace persist
+1. User indicate IP address via system environment supported
+
+### Bug Fixes
+
+1. Fix bug for executor thread ContextClassLoader is empty with ElasticJob-Cloud
+1. Fix bug for enable job from web console have no effect
+1. Shutdown job when application exit
+1. Fix NPE when failover out-of-order in Curator asynchronized persist
+1. Get correct job class name when using CGLIB proxy
+
+###  Change Logs
+
+1. [MILESTONE](https://github.com/apache/shardingsphere-elasticjob/milestone/1)
 
 ## 2.1.5
 
 ### New Features
 
-1. [ISSUE #373](https://github.com/elasticjob/elastic-job/issues/373) Cloud can distinguishes processing TASK_UNREACHABLE,TASK_UNKNOWN,TASK_DROPPED,TASK_GONE,etc
+1. [ISSUE #373](https://github.com/elasticjob/elastic-job/issues/373) Cloud can distinguish processing TASK_UNREACHABLE,TASK_UNKNOWN,TASK_DROPPED,TASK_GONE,etc
 
 ### Bug Fixes
 
@@ -228,6 +283,7 @@
 1. [ISSUE #110](https://github.com/elasticjob/elastic-job/issues/110) Trigger the task manually
 
 ### Bug Fixes
+
 1. [ISSUE #99](https://github.com/elasticjob/elastic-job/issues/99) After deleting a task asynchronously caused the job to be deleted, the task that has not yet ended continues to create zk data
 
 ## 1.1.0
@@ -264,6 +320,7 @@
 1. [ISSUE #93](https://github.com/elasticjob/elastic-job/issues/93) The registry configuration provides default values for baseSleepTimeMilliseconds, maxSleepTimeMilliseconds, and maxRetries
 
 ### Bug Fixes
+
 1. [ISSUE #92](https://github.com/elasticjob/elastic-job/issues/92) Modifying the total shard parameter results in a listening throw timeout exception performed by only a single node
 
 ## 1.0.6
@@ -349,4 +406,5 @@
 1. [ISSUE #53](https://github.com/elasticjob/elastic-job/issues/53) Dataflow's Sequence type tasks use multithreaded fetch data
 
 ## 1.0.1
+
 1. Initial version

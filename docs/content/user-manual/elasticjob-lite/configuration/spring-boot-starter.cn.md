@@ -47,6 +47,7 @@ elasticjob.reg-center.server-lists=localhost:6181
 | --------------------------------- |:-------- |
 | elasticJobClass / elasticJobType  | 是       |
 | cron                              | 否       |
+| jobBootstrapBeanName              | 否       |
 | sharding-total-count              | 是       |
 | sharding-item-parameters          | 否       |
 | job-parameter                     | 否       |
@@ -58,12 +59,17 @@ elasticjob.reg-center.server-lists=localhost:6181
 | job-sharding-strategy-type        | 否       |
 | job-executor-service-handler-type | 否       |
 | job-error-handler-type            | 否       |
+| job-listener-types                | 否       |
 | description                       | 否       |
 | props                             | 否       |
 | disabled                          | 否       |
 | overwrite                         | 否       |
 
-**[elasticJobClass]与[elasticJobType]互斥，每项作业只能有一种类型**
+**elasticJobClass 与 elasticJobType 互斥，每项作业只能有一种类型**
+
+如果配置了 cron 属性则为定时调度作业，Starter 会在应用启动时自动启动；
+否则为一次性调度作业，需要通过 jobBootstrapBeanName 指定 OneOffJobBootstrap Bean 的名称，
+在触发点注入 OneOffJobBootstrap 的实例并手动调用 execute() 方法。
 
 配置格式参考：
 
@@ -82,6 +88,12 @@ elasticjob:
       shardingTotalCount: 3
       props:
         script.command.line: "echo SCRIPT Job: "
+    manualScriptJob:
+      elasticJobType: SCRIPT
+      jobBootstrapBeanName: manualScriptJobBean
+      shardingTotalCount: 9
+      props:
+        script.command.line: "echo Manual SCRIPT Job: "
 ```
 
 **Properties**
@@ -94,6 +106,10 @@ elasticjob.jobs.scriptJob.elastic-job-type=SCRIPT
 elasticjob.jobs.scriptJob.cron=0/5 * * * * ?
 elasticjob.jobs.scriptJob.sharding-total-count=3
 elasticjob.jobs.scriptJob.props.script.command.line=echo SCRIPT Job:
+elasticjob.jobs.manualScriptJob.elastic-job-type=SCRIPT
+elasticjob.jobs.manualScriptJob.job-bootstrap-bean-name=manualScriptJobBean
+elasticjob.jobs.manualScriptJob.sharding-total-count=3
+elasticjob.jobs.manualScriptJob.props.script.command.line=echo Manual SCRIPT Job:
 ```
 
 ## 事件追踪配置
@@ -119,4 +135,30 @@ elasticjob:
 **Properties**
 ```
 elasticjob.tracing.type=RDB
+```
+
+## 作业信息导出配置
+
+配置前缀：`elasticjob.dump`
+
+| 属性名           | 缺省值        | 是否必填 |
+| -----------------|:------------- |:-------- |
+| enabled          | true          | 否       |
+| port             |               | 是       |
+
+Spring Boot 提供了作业信息导出端口快速配置，只需在配置中指定导出所用的端口号即可启用导出功能。
+如果没有指定端口号，导出功能不会生效。
+
+配置参考：
+
+**YAML**
+```yaml
+elasticjob:
+  dump:
+    port: 9888
+```
+
+**Properties**
+```
+elasticjob.dump.port=9888
 ```

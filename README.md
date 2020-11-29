@@ -8,7 +8,7 @@ ElasticJob is a distributed scheduling solution consisting of two separate proje
 
 Through the functions of flexible scheduling, resource management and job management, 
 it creates a distributed scheduling solution suitable for Internet scenarios, 
-and provides diversified job ecosystem through open architecture design.
+and provides a diversified job ecosystem through open architecture design.
 It uses a unified job API for each project.
 Developers only need code one time and can deploy at will.
 
@@ -22,7 +22,8 @@ Welcome communicate with community via [mail list](mailto:dev@shardingsphere.apa
 
 [![Maven Status](https://maven-badges.herokuapp.com/maven-central/com.dangdang/elastic-job/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dangdang/elastic-job)
 [![Build Status](https://secure.travis-ci.org/apache/shardingsphere-elasticjob.png?branch=master)](https://travis-ci.org/apache/shardingsphere-elasticjob)
-[![Coverage Status](https://coveralls.io/repos/github/apache/shardingsphere-elasticjob/badge.svg?branch=master)](https://coveralls.io/github/apache/shardingsphere-elasticjob?branch=master)
+[![GitHub Workflow](https://img.shields.io/github/workflow/status/apache/shardingsphere-elasticjob/Java%20CI%20with%20Maven%20on%20macOS/master)](https://github.com/apache/shardingsphere-elasticjob/actions?query=workflow%3A%22Java+CI+with+Maven+on+macOS%22)
+[![codecov](https://codecov.io/gh/apache/shardingsphere-elasticjob/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/shardingsphere-elasticjob)
 
 ## Introduction
 
@@ -74,7 +75,7 @@ Uses Mesos to manage and isolate resources.
   - Support rich job type lib, such as dataflow, script, HTTP, file, big data
   - Focus business SDK, can work with Spring IOC
 
-- Admin Console
+- [Admin Console](https://github.com/apache/shardingsphere-elasticjob-ui)
   - Job administration
   - Job event trace query
   - Registry center management
@@ -84,6 +85,10 @@ Uses Mesos to manage and isolate resources.
 ### Java
 
 Java 8 or above required.
+
+### Maven
+
+Maven 3.5.0 or above required.
 
 ### ZooKeeper
 

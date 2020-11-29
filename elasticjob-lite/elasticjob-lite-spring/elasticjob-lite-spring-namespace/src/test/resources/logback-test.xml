@@ -36,4 +36,5 @@
     
     <logger name="org.apache.zookeeper" level="ERROR" />
     <logger name="org.apache.curator" level="ERROR" />
+    <logger name="org.apache.shardingsphere.elasticjob.error.handler.general.LogJobErrorHandler" level="OFF" />
 </configuration>

@@ -28,7 +28,7 @@ import javax.sql.DataSource;
  * ElasticJob tracing auto configuration.
  */
 public class ElasticJobTracingConfiguration {
-
+    
     /**
      * Create a bean of tracing configuration.
      *
@@ -38,7 +38,7 @@ public class ElasticJobTracingConfiguration {
     @Bean
     @ConditionalOnBean(DataSource.class)
     @ConditionalOnProperty(name = "elasticjob.tracing.type", havingValue = "RDB")
-    public TracingConfiguration<?> tracingConfiguration(final DataSource dataSource) {
+    public TracingConfiguration<DataSource> tracingConfiguration(final DataSource dataSource) {
         return new TracingConfiguration<>("RDB", dataSource);
     }
 }

@@ -90,11 +90,11 @@ public final class BootstrapEnvironment {
     }
     
     /**
-     * Get zookeeper config.
+     * Get zookeeper configuration.
      *
-     * @return zookeeper config
+     * @return zookeeper configuration
      */
-    // TODO Other zkConfig values ​​are configurable
+    // TODO Other zkConfig values are configurable
     public ZookeeperConfiguration getZookeeperConfiguration() {
         ZookeeperConfiguration result = new ZookeeperConfiguration(getValue(EnvironmentArgument.ZOOKEEPER_SERVERS), getValue(EnvironmentArgument.ZOOKEEPER_NAMESPACE));
         String digest = getValue(EnvironmentArgument.ZOOKEEPER_DIGEST);
@@ -127,7 +127,7 @@ public final class BootstrapEnvironment {
      *
      * @return tracing configuration
      */
-    public Optional<TracingConfiguration> getTracingConfiguration() {
+    public Optional<TracingConfiguration<?>> getTracingConfiguration() {
         String driver = getValue(EnvironmentArgument.EVENT_TRACE_RDB_DRIVER);
         String url = getValue(EnvironmentArgument.EVENT_TRACE_RDB_URL);
         String username = getValue(EnvironmentArgument.EVENT_TRACE_RDB_USERNAME);

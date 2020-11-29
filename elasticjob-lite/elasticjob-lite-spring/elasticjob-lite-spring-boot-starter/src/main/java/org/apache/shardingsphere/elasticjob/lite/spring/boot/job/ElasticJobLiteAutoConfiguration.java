@@ -17,114 +17,28 @@
 
 package org.apache.shardingsphere.elasticjob.lite.spring.boot.job;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import lombok.Setter;
-import org.apache.shardingsphere.elasticjob.api.ElasticJob;
-import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
-import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.OneOffJobBootstrap;
-import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.ScheduleJobBootstrap;
 import org.apache.shardingsphere.elasticjob.lite.spring.boot.reg.ElasticJobRegistryCenterConfiguration;
 import org.apache.shardingsphere.elasticjob.lite.spring.boot.reg.snapshot.ElasticJobSnapshotServiceConfiguration;
 import org.apache.shardingsphere.elasticjob.lite.spring.boot.tracing.ElasticJobTracingConfiguration;
-import org.apache.shardingsphere.elasticjob.reg.base.CoordinatorRegistryCenter;
-import org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import javax.annotation.PostConstruct;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * ElasticJob-Lite auto configuration.
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @AutoConfigureAfter(DataSourceAutoConfiguration.class)
 @ConditionalOnProperty(name = "elasticjob.enabled", havingValue = "true", matchIfMissing = true)
-@Import({ElasticJobRegistryCenterConfiguration.class, ElasticJobTracingConfiguration.class, ElasticJobStartupRunner.class, ElasticJobSnapshotServiceConfiguration.class})
+@Import({ElasticJobRegistryCenterConfiguration.class, ElasticJobTracingConfiguration.class, ElasticJobSnapshotServiceConfiguration.class})
 @EnableConfigurationProperties(ElasticJobProperties.class)
-@Setter
-public class ElasticJobLiteAutoConfiguration implements ApplicationContextAware {
+public class ElasticJobLiteAutoConfiguration {
     
-    private ApplicationContext applicationContext;
-
-    /**
-     * Create job bootstrap instances and register them into container.
-     */
-    @PostConstruct
-    public void createJobBootstrapBeans() {
-        ElasticJobProperties elasticJobProperties = applicationContext.getBean(ElasticJobProperties.class);
-        SingletonBeanRegistry singletonBeanRegistry = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
-        CoordinatorRegistryCenter registryCenter = applicationContext.getBean(CoordinatorRegistryCenter.class);
-        TracingConfiguration tracingConfiguration = getTracingConfiguration();
-        constructJobBootstraps(elasticJobProperties, singletonBeanRegistry, registryCenter, tracingConfiguration);
-    }
-
-    private TracingConfiguration getTracingConfiguration() {
-        Map<String, TracingConfiguration> tracingConfigurationBeans = applicationContext.getBeansOfType(TracingConfiguration.class);
-        if (tracingConfigurationBeans.isEmpty()) {
-            return null;
-        }
-        if (1 == tracingConfigurationBeans.size()) {
-            return tracingConfigurationBeans.values().iterator().next();
-        }
-        throw new BeanCreationException(
-                "More than one [org.apache.shardingsphere.elasticjob.tracing.api.TracingConfiguration] beans found. "
-                        + "Consider disabling [org.apache.shardingsphere.elasticjob.tracing.boot.ElasticJobTracingAutoConfiguration].");
-    }
-
-    private void constructJobBootstraps(final ElasticJobProperties elasticJobProperties, final SingletonBeanRegistry singletonBeanRegistry,
-                                        final CoordinatorRegistryCenter registryCenter, final TracingConfiguration tracingConfiguration) {
-        for (Entry<String, ElasticJobConfigurationProperties> entry : elasticJobProperties.getJobs().entrySet()) {
-            ElasticJobConfigurationProperties jobConfigurationProperties = entry.getValue();
-            Preconditions.checkArgument(null != jobConfigurationProperties.getElasticJobClass()
-                            || !Strings.isNullOrEmpty(jobConfigurationProperties.getElasticJobType()),
-                    "Please specific [elasticJobClass] or [elasticJobType] under job configuration.");
-            Preconditions.checkArgument(null == jobConfigurationProperties.getElasticJobClass()
-                            || Strings.isNullOrEmpty(jobConfigurationProperties.getElasticJobType()),
-                    "[elasticJobClass] and [elasticJobType] are mutually exclusive.");
-            if (null != jobConfigurationProperties.getElasticJobClass()) {
-                registerClassedJob(entry.getKey(), singletonBeanRegistry, registryCenter, tracingConfiguration, jobConfigurationProperties);
-            } else if (!Strings.isNullOrEmpty(jobConfigurationProperties.getElasticJobType())) {
-                registerTypedJob(entry.getKey(), singletonBeanRegistry, registryCenter, tracingConfiguration, jobConfigurationProperties);
-            }
-        }
-    }
-
-    private void registerClassedJob(final String jobName, final SingletonBeanRegistry singletonBeanRegistry, final CoordinatorRegistryCenter registryCenter,
-                                    final TracingConfiguration tracingConfiguration, final ElasticJobConfigurationProperties jobConfigurationProperties) {
-        JobConfiguration jobConfiguration = jobConfigurationProperties.toJobConfiguration(jobName);
-        ElasticJob elasticJob = applicationContext.getBean(jobConfigurationProperties.getElasticJobClass());
-        if (Strings.isNullOrEmpty(jobConfiguration.getCron())) {
-            singletonBeanRegistry.registerSingleton(jobConfiguration.getJobName() + "OneOffJobBootstrap",
-                    new OneOffJobBootstrap(registryCenter, elasticJob, jobConfiguration, tracingConfiguration));
-        } else {
-            singletonBeanRegistry.registerSingleton(jobConfiguration.getJobName() + "ScheduleJobBootstrap",
-                    new ScheduleJobBootstrap(registryCenter, elasticJob, jobConfiguration, tracingConfiguration));
-        }
-    }
-
-    private void registerTypedJob(final String jobName, final SingletonBeanRegistry singletonBeanRegistry, final CoordinatorRegistryCenter registryCenter,
-                                  final TracingConfiguration tracingConfiguration, final ElasticJobConfigurationProperties jobConfigurationProperties) {
-        JobConfiguration jobConfiguration = jobConfigurationProperties.toJobConfiguration(jobName);
-        if (Strings.isNullOrEmpty(jobConfiguration.getCron())) {
-            singletonBeanRegistry.registerSingleton(
-                    jobConfiguration.getJobName() + "OneOffJobBootstrap",
-                    new OneOffJobBootstrap(registryCenter, jobConfigurationProperties.getElasticJobType(), jobConfiguration, tracingConfiguration));
-        } else {
-            singletonBeanRegistry.registerSingleton(
-                    jobConfiguration.getJobName() + "ScheduleJobBootstrap",
-                    new ScheduleJobBootstrap(registryCenter, jobConfigurationProperties.getElasticJobType(), jobConfiguration, tracingConfiguration));
-        }
+    @Configuration(proxyBeanMethods = false)
+    @Import({ElasticJobBootstrapConfiguration.class, ScheduleJobBootstrapStartupRunner.class})
+    protected static class ElasticJobConfiguration {
     }
 }

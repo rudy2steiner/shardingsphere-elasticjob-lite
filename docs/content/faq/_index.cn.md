@@ -9,7 +9,7 @@ chapter = true
 
 回答：
 
-ElasticJob 使用 lombok 实现极简代码。关于更多使用和安装细节，请参考 [lombok 官网](https://projectlombok.org/download.html)。
+ElasticJob 使用 lombok 实现极简代码。关于更多使用和安装细节，请参考 [lombok 官网](https://projectlombok.org/download)。
 
 ## 2. 是否支持动态添加作业?
 
@@ -61,7 +61,7 @@ ElasticJob-Lite 提出了 overwrite 概念，可通过 JobConfiguration 或 Spri
 
 分布式问题非常难于调试和重现，为此 ElasticJob-Lite 提供了 dump 命令。
 
-如果您怀疑某些场景出现问题，可参照[作业信息导出](/cn/user-manual/elasticjob-lite/usage/)将作业运行时信息提交至社区。
+如果您怀疑某些场景出现问题，可参照[作业信息导出](/cn/user-manual/elasticjob-lite/operation/dump/)将作业运行时信息提交至社区。
 ElasticJob 已将 IP 地址等敏感信息过滤，导出的信息可在公网安全传输。
 
 ## 7. ElasticJob-Cloud 有何使用限制?
@@ -87,3 +87,31 @@ ElasticJob 已将 IP 地址等敏感信息过滤，导出的信息可在公网�
 回答：
 
 分片待调整表示作业已启动但尚未获得分片时的状态。
+
+## 11. 为什么首次启动存在任务调度延迟的情况？
+
+回答：
+ElasticJob 执行任务会获取本机IP，首次可能存在获取IP较慢的情况。尝试设置-Djava.net.preferIPv4Stack=true.
+
+
+## 12. Windows环境下，运行ShardingSphere-ElasticJob-UI，找不到或无法加载主类 org.apache.shardingsphere.elasticjob.lite.ui.Bootstrap，如何解决？
+
+回答：
+
+某些解压缩工具在解压ShardingSphere-ElasticJob-UI二进制包时可能将文件名截断，导致找不到某些类。
+
+解决方案：
+
+打开cmd.exe并执行下面的命令：
+
+tar zxvf apache-shardingsphere-elasticjob-${RELEASE.VERSION}-lite-ui-bin.tar.gz
+
+## 13. 运行 Cloud Scheduler 持续输出日志 "Elastic job: IP:PORT has leadership"，不能正常运行
+
+回答：
+
+Cloud Scheduler 依赖 Mesos 库，启动时需要通过 `-Djava.library.path` 指定 Mesos 库所在目录。
+
+例如，Mesos 库位于 `/usr/local/lib`，启动 Cloud Scheduler 前需要设置 `-Djava.library.path=/usr/local/lib`。
+
+Mesos 相关请参考 [Apache Mesos](https://mesos.apache.org/)。
